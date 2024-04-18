@@ -8,6 +8,7 @@ namespace MJ.Player
 {
     public class PlayerController : MonoBehaviour
     {
+        public bool scoreUpCheck;
         /// <summary>
         /// 플레이어의 체력카운트
         /// </summary>
@@ -51,7 +52,7 @@ namespace MJ.Player
         /// <summary>
         /// 공격 후 공격 불가능한 시간
         /// </summary>
-        [SerializeField] private float _attackDelay;
+        [SerializeField] private float _damageDelay;
         /// <summary>
         /// 캐릭터의 캐릭터 컨트롤러 스크립트
         /// </summary>
@@ -104,7 +105,7 @@ namespace MJ.Player
         [SerializeField] private Transform[] _respawnPoint;
 
         [SerializeField]private State _currentState;
-        [SerializeField]private bool _invisible = false;
+        public bool invisible = false;
         [SerializeField]private bool _canAttack = false;
         /// <summary>
         /// 데미지를 입었는지 체크 용도
@@ -114,11 +115,16 @@ namespace MJ.Player
         /// <summary>
         /// 지속시간
         /// </summary>
-        [SerializeField]private float _durationTime;
+        [SerializeField]private float _respawnTime;
         /// <summary>
         /// 지속 시간 갱신용
         /// </summary>
-        private bool _whileDuration = true;
+        [SerializeField]private float _attackDelay;
+        /// <summary>
+        /// 승리모션 패배모션 한번만 체크
+        /// </summary>
+        private bool _motion;
+        
         private void Awake()
         {
             _characterController = GetComponent<CharacterController>();
@@ -135,7 +141,6 @@ namespace MJ.Player
         {
             CurrentPosition();
             IsJump();
-            Debug.Log(currentState.ToString());
             StateCheck();
         }
         /// <summary>
@@ -155,21 +160,47 @@ namespace MJ.Player
                     _animator.Play("Run");
                     break;
                 case State.Attack:
-                    //Attack 애니메이션 추가
-                    //함수 딜레이 용으로 공격, 애니메이션 추가 (추후 수정요구)
-                    _animator.Play("ATK1");
-                    Debug.Log("Animation play called");
-                    //Attack();
                     break;
                 case State.Damage:
                     //Damage 애니메이션 추가
-                    DamageHP();
+                    IsDamaged();
                     break;
                 case State.Death:
                     //Death 애니메이션 추가
-                    _animator.Play("DieA");
+                    ScoreOnceCall();
+                    break;
+                case State.Win:
+                    Debug.Log("이기긴함?");
+                    MotionOnceCall();
+                    break;
+                case State.Lose:
+                    MotionOnceCall();
+                    break;
+                case State.Draw:
+                    MotionOnceCall();
                     break;
             }
+        }
+        private void ScoreOnceCall()
+        {
+            if (scoreUpCheck == true)
+            {
+                ScoreUp();
+                scoreUpCheck = false;
+            }
+            else
+            {
+                return;
+            }
+        }
+        private void MotionOnceCall()
+        {
+            if(_motion == true)
+            {
+                EndMotionPrint();
+                _motion = false;
+            }
+            else { return; }
         }
         /// <summary>
         /// 캐릭터의 점프를 담당하는 기능 함수
@@ -196,6 +227,25 @@ namespace MJ.Player
             transform.localRotation *= Quaternion.Euler(0f, -_direction.normalized.x * _rotateSpeed * Time.deltaTime, 0f);
         }
 
+        /// <summary>
+        /// 레이어 체크해서 각 팀의 인원이 죽는다면 다른 팀의 점수가 올라간다.
+        /// </summary>
+        public void ScoreUp()
+        {
+            if (!GameManager.Instance.isPlaying) { return; } //게임플레이 중이 아닐 때에는 점수가 안올라야함.
+            if (LayerMask.LayerToName(gameObject.layer) == "TeamA")
+            {
+                GameManager.teamBScore++;
+                Debug.Log("스코어B 올라가는중~");
+                scoreUpCheck = false;
+            }
+            else if (LayerMask.LayerToName(gameObject.layer) == "TeamB")
+            {
+                scoreUpCheck = false;
+                GameManager.teamAScore++;
+                Debug.Log("스코어A 올라가는중~");
+            }
+        }
 
         /// <summary>
         /// 리스폰을 담당하는 기능적 함수 따로 적는 이유는 FixedUpdate에서 진행해야 할 함수이기 때문에 따로 잡아둠
@@ -203,7 +253,7 @@ namespace MJ.Player
         private void Respawn()
         {
             RespawnPlayer();
-            StartCoroutine(ChangeIdle());
+            StartCoroutine(ResetRespawnState());
             ResetHP();
         }
         /// <summary>
@@ -214,50 +264,65 @@ namespace MJ.Player
             _playerTransform.position = _respawnPoint[0].position;
         }
         /// <summary>
-        /// 플레이어의 체력에 일정한 딜레이를 가지고 데미지를 주는 함수
-        /// </summary>
-        private void DamageHP() 
-        {
-            if (!_invisible)
-            {
-                return;
-            }//무적판정일 때 예외를 주는 함수
-            StartCoroutine(AttackDelay());
-            _hpCount++;
-            _animator.Play("Damage");
-        }
-        /// <summary>
         /// 죽음 상태 이후 체력을 초기화 시켜주는 함수 
         /// </summary>
         private void ResetHP()
         {
             _hpCount = 0;
         }
+        /// <summary>
+        /// 조건 별 함수 체크용
+        /// </summary>
         public void StateCheck()
         {
-            if (isLive)
+            if(GameManager.Instance.isPlaying) 
             {
-                if (!_damaged)
+                if (isLive)
                 {
-                    return;
-                }
-
-                if (_canAttack)
-                {
-                    _currentState = State.Attack;
-                    switchStateUpdate(currentState);
-                }//공격이 가능할 때
+                    if (_damaged)
+                    {
+                        CanMove();
+                        IsDamaged();
+                    }//데미지를 입었을 때
+                    else
+                    {
+                        if (_canAttack)
+                        {
+                            CanMove();
+                        }//공격이 가능할 때
+                        else
+                        {
+                            if (_onTouching)
+                            {
+                                IsMove();
+                            }
+                        }
+                    }
+                }//살아있을 때
                 else
                 {
-                    IsMove();
-                }
-                
-            }//살아있을 때
+                    _currentState = State.Death;
+                    switchStateUpdate(this.currentState);
+                }//죽어 있을 때
+            }//인게임 플레이 중일때
             else
             {
-                _currentState = State.Death;
-                switchStateUpdate(currentState);
-            }//죽어 있을 때
+                if(GameManager.Instance.winningTeam == LayerMask.LayerToName(gameObject.layer))
+                {
+                    _currentState = State.Win;
+                    switchStateUpdate(this.currentState);
+                }
+                else if(GameManager.Instance.winningTeam == "Draw")
+                {
+                    _currentState = State.Draw;
+                    switchStateUpdate(this.currentState);
+                }
+                else
+                {
+                    _currentState = State.Lose;
+                    switchStateUpdate(this.currentState);
+                }
+            }
         }
         /// <summary>
         /// fixedUpdate에서 돌아가야해서 여기다가 넣음 수정 요망 TODO 
@@ -276,31 +341,92 @@ namespace MJ.Player
         /// </summary>
         public void IsDamaged()
         {
-            if (!_damaged)
+            if (invisible || _damaged)
             {
                 return;
             }//중복 데미지의 예외사항
-
+            StartCoroutine(DamageDelay());
             _currentState = State.Damage;
             switchStateUpdate(this.currentState);
+            _hpCount++;
+        }
+        
+
+        /// <summary>
+        /// 승패를 구분해서 모션을 플레이 해줌
+        /// </summary>
+        private void EndMotionPrint()
+        {
+            Debug.Log("이 함수 불러짐?");
+            if (GameManager.Instance.winningTeam == LayerMask.LayerToName(gameObject.layer))//이겼을 때
+            {
+                _animator.Play("Victory");
+                Debug.Log("승리 모션 취하는 중~");
+            }//이겼을 때 모션
+            else if(GameManager.Instance.winningTeam == "Draw")
+            {
+                _animator.Play("Tired");
+                Debug.Log("비긴 모션 취하는 중~");
+
+            }//비겼을 때
+            else
+            {
+                _animator.Play("Sit");
+                Debug.Log("패배 모션 취하는 중~");
+
+            }//졌을 때
+        }
+
+        public void IsAttack()
+        {
+            if(_canAttack)
+            {
+                return;
+            }
+            StartCoroutine(AttackDelay());
         }
         /// <summary>
         /// 죽음상태 이 후 FixedUpdate에서 Idle 상태로 _durationTime만큼의 딜레이 후 Idle상태로 변환
         /// </summary>
         /// <returns></returns>
-        IEnumerator ChangeIdle()
+        IEnumerator ResetRespawnState()
         {
-            yield return new WaitForSeconds(_durationTime);
+            yield return new WaitForSeconds(_respawnTime);
             isLive = true;
-            _currentState = State.Idle;
-            switchStateUpdate(currentState);
+            IsMove();
+        }
+
+        /// <summary>
+        /// 데미지 중복 방지용 코루틴
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator DamageDelay()
+        {
+            if (_damaged)
+            {
+                yield return null;
+            }
+            _damaged = true;
+            invisible = true;
+            _animator.Play("Damage");
+            yield return new WaitForSeconds(_damageDelay);
+            invisible = false;
+            _damaged = false;
         }
 
         IEnumerator AttackDelay()
         {
-            _invisible = true;
+            if (_canAttack)
+            {
+                yield return null;
+            }
+            _canAttack = true;
+            _animator.Play("ATK1");
+            _currentState = State.Attack;
+            switchStateUpdate(this.currentState);
             yield return new WaitForSeconds(_attackDelay);
-            _invisible = false;
+            _canAttack = false;
+            CanMove();
         }
         /// <summary>
         /// 움직임을 체크해서 State를 변경하는 함수 (Move, Idle)
@@ -320,22 +446,22 @@ namespace MJ.Player
                 switchStateUpdate(this.currentState);
 
             }
-            Debug.Log(_onTouching);
-        }
-        /// <summary>
-        /// 지속 시간 체크용 코루틴 함수
-        /// </summary>
-        /// <param name="result">거짓으로 됬다가 5초 뒤에 참으로 바뀜</param>
-        /// <returns></returns>
-        IEnumerator CheckTime(Action<bool> result)
-        {
-            bool check = false;
-            result(check);
-            yield return new WaitForSeconds(_durationTime);
-            bool checklater = true;
-            result(checklater);
         }
 
+        /// <summary>
+        /// 공격 및 데미지 입을 때에도 움직일 수 있게 직접 함수를 넣음
+        /// </summary>
+        void CanMove()
+        {
+            if (_onTouching)
+            {
+                Movement();
+            }//입력이 있을 때
+            else
+            {
+                Movement();
+            }
+        }
         /// <summary>
         /// 입력 할 벡터 값을 리턴해주는 함수
         /// </summary>
@@ -359,13 +485,21 @@ namespace MJ.Player
             _currentPosition = InputVector(tempInput);
         }
         /// <summary>
-        /// 캐릭터의 전진 후진, 회전 , 점프등 전반적인 움직임을 관리하는 함수
+        /// 움직임의 관련된 함수를 한번에 모아놓은 곳
         /// </summary>
-        private void MoveConditionCheck()
+        private void Movement()
         {
             Jump();
             Move();
             Rotate();
+        }
+
+        /// <summary>
+        /// 캐릭터의 전진 후진, 회전 , 점프등 전반적인 움직임을 관리하는 함수
+        /// </summary>
+        private void MoveConditionCheck()
+        {
+            Movement();
             switchStateUpdate(this.currentState);
         }
         /// <summary>

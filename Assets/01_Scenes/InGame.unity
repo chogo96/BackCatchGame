@@ -37552,6 +37552,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dc0fcd7e8967854bafee6f5832ec00d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  scoreUpCheck: 0
   inputActionAsset: {fileID: -944628639613478452, guid: 3fd8057875138a64bab028d2ced9a9a5,
     type: 3}
   _gravity: 0
@@ -37561,15 +37562,18 @@ MonoBehaviour:
   _groundDistance: 0
   groundLayer:
     serializedVersion: 2
-    m_Bits: 0
-  _attackDelay: 0
+    m_Bits: 8
+  _damageDelay: 3
   isLive: 1
   _hpCount: 0
-  _respawnPoint: []
+  _respawnPoint:
+  - {fileID: 1635682682}
   _currentState: 0
+  invisible: 0
   _canAttack: 0
-  _damaged: 1
-  _durationTime: 0
+  _damaged: 0
+  _respawnTime: 3
+  _attackDelay: 3
 --- !u!114 &1933117483
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -37725,19 +37729,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbbaff2e52bc923479e272d7f1b5e318, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _invisibleTime: 2
-  _respawnTime: 0
-  _backAngle: 0
-  _distance: 3.03
+  _backAngle: 93
+  _distance: 4
   _enemyTeamMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
   _obstacleMask:
     serializedVersion: 2
     m_Bits: 8
   _vulnerable: 0
-  _attackDistance: 1.11
-  _height: 0.71
+  _attackDistance: 1.1
+  _height: 0.7
 --- !u!1 &1934482836
 GameObject:
   m_ObjectHideFlags: 0
@@ -37771,8 +37773,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbbaff2e52bc923479e272d7f1b5e318, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _invisibleTime: 2
-  _respawnTime: 0
   _backAngle: 0
   _distance: 3.03
   _enemyTeamMask:
@@ -37822,6 +37822,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dc0fcd7e8967854bafee6f5832ec00d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  scoreUpCheck: 0
   inputActionAsset: {fileID: -944628639613478452, guid: 3fd8057875138a64bab028d2ced9a9a5,
     type: 3}
   _gravity: 0
@@ -37832,14 +37833,16 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
-  _attackDelay: 0
+  _damageDelay: 0
   isLive: 1
   _hpCount: 0
   _respawnPoint: []
   _currentState: 0
+  invisible: 0
   _canAttack: 0
   _damaged: 1
-  _durationTime: 2
+  _respawnTime: 0
+  _attackDelay: 0
 --- !u!114 &1934482840
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -39220,10 +39223,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbbaff2e52bc923479e272d7f1b5e318, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _invisibleTime: 2
-  _respawnTime: 0
-  _backAngle: 0
-  _distance: 3.03
+  _backAngle: 93
+  _distance: 4
   _enemyTeamMask:
     serializedVersion: 2
     m_Bits: 256
@@ -39231,8 +39232,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   _vulnerable: 0
-  _attackDistance: 1.11
-  _height: 0.71
+  _attackDistance: 1.1
+  _height: 0.7
 --- !u!143 &2009958291
 CharacterController:
   m_ObjectHideFlags: 0
@@ -39271,6 +39272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dc0fcd7e8967854bafee6f5832ec00d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  scoreUpCheck: 0
   inputActionAsset: {fileID: -944628639613478452, guid: 3fd8057875138a64bab028d2ced9a9a5,
     type: 3}
   _gravity: 0
@@ -39280,15 +39282,18 @@ MonoBehaviour:
   _groundDistance: 0
   groundLayer:
     serializedVersion: 2
-    m_Bits: 0
-  _attackDelay: 0
+    m_Bits: 8
+  _damageDelay: 3
   isLive: 1
   _hpCount: 0
-  _respawnPoint: []
+  _respawnPoint:
+  - {fileID: 1635682682}
   _currentState: 0
+  invisible: 0
   _canAttack: 0
-  _damaged: 1
-  _durationTime: 0
+  _damaged: 0
+  _respawnTime: 3
+  _attackDelay: 3
 --- !u!114 &2009958293
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40516,8 +40521,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e464a4a9b5ba044588ab72e036f1ab7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TeamAScore: 0
-  TeamBScore: 0
+  isPlaying: 0
+  _goalScore: 1
+  endTime: 10
+  currentTime: 0
 --- !u!4 &2052375888
 Transform:
   m_ObjectHideFlags: 0
@@ -45252,6 +45259,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dc0fcd7e8967854bafee6f5832ec00d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  scoreUpCheck: 0
   inputActionAsset: {fileID: -944628639613478452, guid: 3fd8057875138a64bab028d2ced9a9a5,
     type: 3}
   _gravity: 9.8
@@ -45262,15 +45270,17 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
-  _attackDelay: 3
+  _damageDelay: 0.5
   isLive: 1
   _hpCount: 0
   _respawnPoint:
   - {fileID: 2105282628}
   _currentState: 0
+  invisible: 0
   _canAttack: 0
-  _damaged: 1
-  _durationTime: 1
+  _damaged: 0
+  _respawnTime: 4
+  _attackDelay: 0.5
 --- !u!114 &8818352946020915886
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45412,8 +45422,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbbaff2e52bc923479e272d7f1b5e318, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _invisibleTime: 2
-  _respawnTime: 0
   _backAngle: 93
   _distance: 4
   _enemyTeamMask:
@@ -45503,6 +45511,7 @@ SceneRoots:
   m_Roots:
   - {fileID: 20758693}
   - {fileID: 64780021}
+  - {fileID: 2052375888}
   - {fileID: 744682513}
   - {fileID: 1736444917}
   - {fileID: 5450675284365980790}
@@ -45519,6 +45528,5 @@ SceneRoots:
   - {fileID: 1933117485}
   - {fileID: 2009958295}
   - {fileID: 1267303273}
-  - {fileID: 2052375888}
   - {fileID: 2105282628}
   - {fileID: 1635682682}

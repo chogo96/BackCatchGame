@@ -12,7 +12,7 @@ public class StateManagement : SingletonOfT<StateManagement>
     //추가하고 싶은 상태가 있다면 enum에 추가 후 case에 State.Case 형식으로 추가하면 됨
     public enum State
     {
-        Idle, Move, Attack, Damage, Death
+        Idle, Move, Attack, Damage, Death ,Win, Lose, Draw
     }
     private void Awake()
     {

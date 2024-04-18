@@ -9,19 +9,7 @@ using static StateManagement;
 
 public class CrushManagement : MonoBehaviour
 {
-    #region 프로퍼티
-    /// <summary>
-    /// 리스폰 시간
-    /// </summary>
-    public float respawnTime {  get => _respawnTime; set { } }
-    /// <summary>
-    /// 피격 당하지 않는 시간
-    /// </summary>
-    public float invisibleTime { get => _invisibleTime; set { } }
 
-    [SerializeField] private float _invisibleTime;
-    [SerializeField] private float _respawnTime;
-    #endregion
     /// <summary>
     /// 후면 판정 각도
     /// </summary>
@@ -87,15 +75,17 @@ public class CrushManagement : MonoBehaviour
 
         //리스트 내용을 전부 제거
         _hitTargetList.Clear();
+        if (!GameManager.Instance.isPlaying) return;
 
         Collider[] Targets = Physics.OverlapSphere(myPosition, _distance, _enemyTeamMask);
+
 
         if (Targets.Length == 0)
         {
             _vulnerable = false;
             return;
         }
-
+        
         foreach (Collider Enemy in Targets)
         {
             //레이캐스트에 들어온 충돌체의 위치값 체크
@@ -117,15 +107,16 @@ public class CrushManagement : MonoBehaviour
                 //디버깅 및 테스트용으로 사용하는 줄 > TODO 삭제요망
                 Debug.DrawLine(myPosition, targetPos, Color.red);
                 _vulnerable = true;
-                if (_vulnerable && _hitTargetList.Contains(Enemy) && Physics.Raycast(myPosition, targetDir, _attackDistance, _enemyTeamMask))
+                if (_vulnerable && _hitTargetList.Contains(Enemy) && Physics.Raycast(myPosition, targetDir, _attackDistance, _enemyTeamMask) && !_enemyPlayerController._damaged)
                 {
-                    _enemyPlayerController.canAttack = true;
+                    _enemyPlayerController.IsAttack();
                     _playerController.IsDamaged();
                     //죽었거나 데미지를 입을 때는 중복 데미지 체크 적이 공격 가능한 상태인가
 
                     if (_playerController.hpCount >= 2)
                     {
                         _playerController.isLive = false;
+                        _playerController.scoreUpCheck = true;
                         return;
                     }
                 }
@@ -156,7 +147,7 @@ public class CrushManagement : MonoBehaviour
         Debug.DrawRay(myPosition, lookDir * _distance, Color.yellow);
     }
     //각도를 벡터값으로 바꿔주는 함수
-        Vector3 AngleToDir(float angle)
+    Vector3 AngleToDir(float angle)
     {
         //각도를 라디안으로 반환하고.
         float radian = angle * Mathf.Deg2Rad;
