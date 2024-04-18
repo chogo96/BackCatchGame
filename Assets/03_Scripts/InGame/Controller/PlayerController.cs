@@ -8,6 +8,9 @@ namespace MJ.Player
 {
     public class PlayerController : MonoBehaviour
     {
+        /// <summary>
+        /// 점수가 한번만 올라가게 체크하는 용도
+        /// </summary>
         public bool scoreUpCheck;
         /// <summary>
         /// 플레이어의 체력카운트
@@ -123,7 +126,7 @@ namespace MJ.Player
         /// <summary>
         /// 승리모션 패배모션 한번만 체크
         /// </summary>
-        private bool _motion;
+        private bool _motion = true;
         
         private void Awake()
         {
@@ -142,6 +145,8 @@ namespace MJ.Player
             CurrentPosition();
             IsJump();
             StateCheck();
+
+            Debug.Log(_motion);
         }
         /// <summary>
         /// 상태 변경시 업데이트용 함수
@@ -170,7 +175,6 @@ namespace MJ.Player
                     ScoreOnceCall();
                     break;
                 case State.Win:
-                    Debug.Log("이기긴함?");
                     MotionOnceCall();
                     break;
                 case State.Lose:
@@ -185,6 +189,7 @@ namespace MJ.Player
         {
             if (scoreUpCheck == true)
             {
+                _animator.Play("DieA");
                 ScoreUp();
                 scoreUpCheck = false;
             }
@@ -200,7 +205,10 @@ namespace MJ.Player
                 EndMotionPrint();
                 _motion = false;
             }
-            else { return; }
+            else 
+            { 
+                return; 
+            }
         }
         /// <summary>
         /// 캐릭터의 점프를 담당하는 기능 함수
@@ -295,6 +303,11 @@ namespace MJ.Player
                             if (_onTouching)
                             {
                                 IsMove();
+                            }
+                            else
+                            {
+                                _currentState = State.Idle;
+                                switchStateUpdate(this.currentState);
                             }
                         }
                     }
@@ -433,6 +446,10 @@ namespace MJ.Player
         /// </summary>
         void IsMove()
         {
+            if (!GameManager.Instance.isPlaying)
+            {
+                return;
+            }//플레이중이 아닐때는 필요없는 것
             if (_onTouching)
             {
                 _currentState = State.Move;

@@ -37563,7 +37563,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
-  _damageDelay: 3
+  _damageDelay: 0.5
   isLive: 1
   _hpCount: 0
   _respawnPoint:
@@ -37777,7 +37777,7 @@ MonoBehaviour:
   _distance: 3.03
   _enemyTeamMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
   _obstacleMask:
     serializedVersion: 2
     m_Bits: 8
@@ -39283,7 +39283,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
-  _damageDelay: 3
+  _damageDelay: 0.5
   isLive: 1
   _hpCount: 0
   _respawnPoint:
@@ -40522,8 +40522,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isPlaying: 0
-  _goalScore: 1
-  endTime: 10
+  _goalScore: 2
+  winningTeam: 
+  endTime: 60
   currentTime: 0
 --- !u!4 &2052375888
 Transform:
@@ -45422,7 +45423,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbbaff2e52bc923479e272d7f1b5e318, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _backAngle: 93
+  _backAngle: 70
   _distance: 4
   _enemyTeamMask:
     serializedVersion: 2

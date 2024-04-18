@@ -39,16 +39,8 @@ public class GameManager : SingletonOfT<GameManager>
 
     private void Update()
     {
-        
         TimeFlow();
         CheckCurrentGame();
-        Debug.Log(teamAScore);
-        Debug.Log(teamBScore);
-        if (!isPlaying)
-        {
-
-        }
-
     }
 
     public void ResetWinningTeam()
@@ -60,7 +52,7 @@ public class GameManager : SingletonOfT<GameManager>
     /// </summary>
     public void CheckCurrentGame()
     {
-        if(currentTime == endTime)
+        if(currentTime >= endTime)
         {
             EndTimeJudge();
         } //시간 종료시
@@ -99,7 +91,7 @@ public class GameManager : SingletonOfT<GameManager>
     /// </summary>
     public void EndByTime()
     {
-        if (currentTime == endTime)
+        if (currentTime >= endTime)
         {
             EndTimeJudge();
         }
@@ -118,6 +110,10 @@ public class GameManager : SingletonOfT<GameManager>
         else if (teamBScore > teamAScore)
         {
             winningTeam = "TeamB";
+        }
+        else
+        {
+            winningTeam = "Draw";
         }
     }
     /// <summary>
