@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Unity.VisualScripting;
+using UnityEngine.Diagnostics;
 
 
 public class CustomPlayfab : SingletonOfT<CustomPlayfab>
@@ -33,7 +34,7 @@ public class CustomPlayfab : SingletonOfT<CustomPlayfab>
             Please change the titleId below to your own titleId from PlayFab Game Manager.
             If you have already set the value in the Editor Extensions, this can be skipped.
             */
-            PlayFabSettings.staticSettings.TitleId = "E5507";
+            PlayFabSettings.staticSettings.TitleId = "F651A";
             PopUpLogUI.Instance.logText.text = "에러발생, playfabs TitleID 세팅이 필요합니다";
         }
     }
@@ -61,6 +62,7 @@ public class CustomPlayfab : SingletonOfT<CustomPlayfab>
         var request = new RegisterPlayFabUserRequest { Email = id , Password = pw ,RequireBothUsernameAndEmail = false};
         PlayFabClientAPI.RegisterPlayFabUser(request, OnRegisterSuccess, OnRegisterFailure);
     }
+
 
     /// <summary>
     /// 로그인 성공시 콜백으로 실행되는 함수
@@ -114,6 +116,25 @@ public class CustomPlayfab : SingletonOfT<CustomPlayfab>
     }
     #endregion
 
+    #region 닉네임등록
+    public void TryInputNickname(string nickname)
+    {
+        var request = new RegisterPlayFabUserRequest { Username = nickname };
+        PlayFabClientAPI.RegisterPlayFabUser(request, OnInputNicknameSuccess, OnInputNicknameFail);
+    }
+    private void OnInputNicknameSuccess(RegisterPlayFabUserResult result)
+    {
+        PopUpLogUI.Instance.logText.text = "닉네임 등록 성공";
+        PopUpInformWindowsUI.Instance.Success_Inform("성공!", "닉네임이 등록되었습니다.");
+    }
+    private void OnInputNicknameFail(PlayFabError error)
+    {
+        print(error);
+        PopUpLogUI.Instance.logText.text = "닉네임 등록실패";
+        PopUpInformWindowsUI.Instance.ERROR_Inform("생성되지 않았습니다", "다시 한번 입력해주세요. 인터넷 혹은 서버점검일 수 있습니다.");
+    }
+    #endregion
+
     private void Update()
     {
 
@@ -139,7 +160,26 @@ public class CustomPlayfab : SingletonOfT<CustomPlayfab>
         }
         _accountInfo = result;
 
+        // Todo: 아래에서 읽은 계정 정보에서
+        // 닉네임 값이 빈 문자열이면, 닉네임 등록.
+        // 빈 문자열이 아니면, 로비 캔버스 보여주기.
+
+        // 아래와 같이 빈 문자열 값인지를 비교할 수 있음.
+        // 아래 if 구문은 오류 -> 닉네임 등록하도록. else 일 때 로비 캔버스 보여주기.
         print(_accountInfo.AccountInfo.TitleInfo.DisplayName);//인 게임의 닉네임
+
+        // 닉네임 문자열 값이 비었는지 확인.
+        if (string.IsNullOrEmpty(_accountInfo.AccountInfo.TitleInfo.DisplayName) 
+            || string.IsNullOrWhiteSpace(_accountInfo.AccountInfo.TitleInfo.DisplayName))
+        {
+            GameObject.Find("Nickname_Canvas").GetComponent<Canvas>().enabled = true;
+        }
+        // 안 비었음.
+        else
+        {
+            //로비 캔버스를 보여준다
+        }
+        
         print(_accountInfo.AccountInfo.PrivateInfo.Email);//유저의 이메일
         print(_accountInfo.AccountInfo.TitleInfo.LastLogin);//유저의 마지막 접속일
     }

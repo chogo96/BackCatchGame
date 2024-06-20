@@ -3,10 +3,13 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Windows;
+using Photon.Pun;
+using Photon.Realtime;
+using Cinemachine;
 using static StateManagement;
 namespace MJ.Player
 {
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : MonoBehaviourPunCallbacks
     {
         /// <summary>
         /// 점수가 한번만 올라가게 체크하는 용도
@@ -15,7 +18,7 @@ namespace MJ.Player
         /// <summary>
         /// 플레이어의 체력카운트
         /// </summary>
-        public int hpCount { get => _hpCount; set{ } }
+        public int hpCount { get => _hpCount; set { } }
         /// <summary>
         /// 공격 가능여부 > 외부에서 변동해야함
         /// </summary>
@@ -79,7 +82,7 @@ namespace MJ.Player
         /// <summary>
         /// 캐릭터가 살아있는지 체크용
         /// </summary>
-         public bool isLive;
+        public bool isLive;
         /// <summary>
         /// 캐릭터 컨트롤러에 넣을 벡터값 저장용
         /// </summary>
@@ -97,7 +100,7 @@ namespace MJ.Player
         /// </summary>
         private Transform _playerTransform;
 
-        [SerializeField]private int _hpCount;
+        [SerializeField] private int _hpCount;
         /// <summary>
         /// 캐릭터가 땅에 닿았는지 체크하는 용도
         /// </summary>
@@ -107,9 +110,9 @@ namespace MJ.Player
         /// </summary>
         [SerializeField] private Transform[] _respawnPoint;
 
-        [SerializeField]private State _currentState;
+        [SerializeField] private State _currentState;
         public bool invisible = false;
-        [SerializeField]private bool _canAttack = false;
+        [SerializeField] private bool _canAttack = false;
         /// <summary>
         /// 데미지를 입었는지 체크 용도
         /// </summary>
@@ -118,35 +121,58 @@ namespace MJ.Player
         /// <summary>
         /// 지속시간
         /// </summary>
-        [SerializeField]private float _respawnTime;
+        [SerializeField] private float _respawnTime;
         /// <summary>
         /// 지속 시간 갱신용
         /// </summary>
-        [SerializeField]private float _attackDelay;
+        [SerializeField] private float _attackDelay;
         /// <summary>
         /// 승리모션 패배모션 한번만 체크
         /// </summary>
         private bool _motion = true;
-        
+        /// <summary>
+        /// 포톤 뷰를 캐시처리할 변수
+        /// </summary>
+        private PhotonView _photonView;
+        /// <summary>
+        /// 버츄얼 카메라를 캐시처리할 변수
+        /// </summary>
+        private CinemachineVirtualCamera _virtualCamera;
+
         private void Awake()
         {
             _characterController = GetComponent<CharacterController>();
-            
+
             this.currentState = State.Idle;
 
             _animator = GetComponent<Animator>();
-            
+
             _hpCount = 0;
 
             _playerTransform = GetComponent<Transform>();
+
+            _photonView = GetComponent<PhotonView>();
+
+            _virtualCamera = GameObject.FindObjectOfType<CinemachineVirtualCamera>();
+
+
+        }
+        private void Start()
+        {
+            if (_photonView.IsMine)
+            {
+                _virtualCamera.Follow = GameObject.Find("CameraFollowPivot").GetComponent<Transform>();
+                _virtualCamera.LookAt = GameObject.Find("CameraFollowPivot").GetComponent<Transform>();
+            }
         }
         private void Update()
         {
-            CurrentPosition();
-            IsJump();
-            StateCheck();
-
-            Debug.Log(_motion);
+            if (_photonView.IsMine)
+            {
+                CurrentPosition();
+                IsJump();
+                StateCheck();
+            }
         }
         /// <summary>
         /// 상태 변경시 업데이트용 함수
@@ -187,27 +213,35 @@ namespace MJ.Player
         }
         private void ScoreOnceCall()
         {
-            if (scoreUpCheck == true)
+            if (_photonView.IsMine)
             {
-                _animator.Play("DieA");
-                ScoreUp();
-                scoreUpCheck = false;
-            }
-            else
-            {
-                return;
+                if (scoreUpCheck == true)
+                {
+                    _animator.Play("DieA");
+                    ScoreUp();
+                    scoreUpCheck = false;
+                }
+                else
+                {
+                    return;
+                }
             }
         }
         private void MotionOnceCall()
         {
-            if(_motion == true)
+            if (_photonView.IsMine)
             {
-                EndMotionPrint();
-                _motion = false;
-            }
-            else 
-            { 
-                return; 
+
+
+                if (_motion == true)
+                {
+                    EndMotionPrint();
+                    _motion = false;
+                }
+                else
+                {
+                    return;
+                }
             }
         }
         /// <summary>
@@ -215,24 +249,37 @@ namespace MJ.Player
         /// </summary>
         private void Jump()
         {
-            JumpVector();
-            _characterController.Move(_jumpVector * Time.deltaTime);
+            if (_photonView.IsMine)
+            {
+
+
+                JumpVector();
+                _characterController.Move(_jumpVector * Time.deltaTime);
+
+            }
         }
         /// <summary>
         /// 캐릭터의 전,후진을 담당하는 기능 함수
         /// </summary>
         private void Move()
         {
-            MovingVector();
-            _characterController.Move(_moveVector * Time.deltaTime);
+            if (_photonView.IsMine)
+            {
+                MovingVector();
+                _characterController.Move(_moveVector * Time.deltaTime);
+            }
         }
         /// <summary>
         /// 캐릭터를 회전하는 기능 함수
         /// </summary>
         private void Rotate()
         {
-            CheckDirection();
-            transform.localRotation *= Quaternion.Euler(0f, -_direction.normalized.x * _rotateSpeed * Time.deltaTime, 0f);
+            if (_photonView.IsMine)
+            {
+                CheckDirection();
+                transform.localRotation *= Quaternion.Euler(0f, -_direction.normalized.x * _rotateSpeed * Time.deltaTime, 0f);
+            }
+
         }
 
         /// <summary>
@@ -260,16 +307,30 @@ namespace MJ.Player
         /// </summary>
         private void Respawn()
         {
-            RespawnPlayer();
-            StartCoroutine(ResetRespawnState());
-            ResetHP();
+            Debug.Log("함수는 불러졌다.");
+            if (!isLive)
+            {
+                Debug.Log("죽었는지 확인했다.");
+
+                RespawnPlayer();
+                StartCoroutine(ResetRespawnState());
+                ResetHP();
+            }
         }
         /// <summary>
         /// 플레이어를 리스폰 지역의 포지션으로 옮기는 함수
         /// </summary>
         private void RespawnPlayer()
         {
-            _playerTransform.position = _respawnPoint[0].position;
+            Debug.Log("옮겨지는지 확인한다.");
+            if (gameObject.layer == LayerMask.NameToLayer("TeamA"))
+            {
+                _playerTransform.position = GameObject.Find("TeamASpawnPoint").GetComponent<Transform>().position;
+            }
+            else
+            {
+                _playerTransform.position = GameObject.Find("TeamBSpawnPoint").GetComponent<Transform>().position;
+            }
         }
         /// <summary>
         /// 죽음 상태 이후 체력을 초기화 시켜주는 함수 
@@ -277,74 +338,81 @@ namespace MJ.Player
         private void ResetHP()
         {
             _hpCount = 0;
+            Debug.Log("체력이 바뀌는거니?");
         }
         /// <summary>
         /// 조건 별 함수 체크용
         /// </summary>
         public void StateCheck()
         {
-            if(GameManager.Instance.isPlaying) 
+            if (_photonView.IsMine)
             {
-                if (isLive)
+                if (GameManager.Instance.isPlaying)
                 {
-                    if (_damaged)
+                    if (isLive)
                     {
-                        CanMove();
-                        IsDamaged();
-                    }//데미지를 입었을 때
-                    else
-                    {
-                        if (_canAttack)
+                        if (_damaged)
                         {
                             CanMove();
-                        }//공격이 가능할 때
+                            IsDamaged();
+                        }//데미지를 입었을 때
                         else
                         {
-                            if (_onTouching)
+                            if (_canAttack)
                             {
-                                IsMove();
-                            }
+                                CanMove();
+                            }//공격이 가능할 때
                             else
                             {
-                                _currentState = State.Idle;
-                                switchStateUpdate(this.currentState);
+                                if (_onTouching)
+                                {
+                                    IsMove();
+                                }
+                                else
+                                {
+                                    _currentState = State.Idle;
+                                    switchStateUpdate(this.currentState);
+                                }
                             }
                         }
+                    }//살아있을 때
+                    else
+                    {
+                        _currentState = State.Death;
+                        switchStateUpdate(this.currentState);
+                    }//죽어 있을 때
+                }//인게임 플레이 중일때
+                else
+                {
+                    if (GameManager.Instance.winningTeam == LayerMask.LayerToName(gameObject.layer))
+                    {
+                        _currentState = State.Win;
+                        switchStateUpdate(this.currentState);
                     }
-                }//살아있을 때
-                else
-                {
-                    _currentState = State.Death;
-                    switchStateUpdate(this.currentState);
-                }//죽어 있을 때
-            }//인게임 플레이 중일때
-            else
-            {
-                if(GameManager.Instance.winningTeam == LayerMask.LayerToName(gameObject.layer))
-                {
-                    _currentState = State.Win;
-                    switchStateUpdate(this.currentState);
+                    else if (GameManager.Instance.winningTeam == "Draw")
+                    {
+                        _currentState = State.Draw;
+                        switchStateUpdate(this.currentState);
+                    }
+                    else
+                    {
+                        _currentState = State.Lose;
+                        switchStateUpdate(this.currentState);
+                    }
                 }
-                else if(GameManager.Instance.winningTeam == "Draw")
-                {
-                    _currentState = State.Draw;
-                    switchStateUpdate(this.currentState);
-                }
-                else
-                {
-                    _currentState = State.Lose;
-                    switchStateUpdate(this.currentState);
-                }
-            }
+            }//포톤뷰가 내꺼일 때
         }
         /// <summary>
         /// fixedUpdate에서 돌아가야해서 여기다가 넣음 수정 요망 TODO 
         /// </summary>
         private void FixedUpdate()
         {
-            if(!isLive)
+            if (_photonView.IsMine)
             {
+                Debug.Log("되 살아나야해");
+
                 Respawn();
+
             }
         }
         /// <summary>
@@ -354,45 +422,47 @@ namespace MJ.Player
         /// </summary>
         public void IsDamaged()
         {
-            if (invisible || _damaged)
+            if (_photonView.IsMine)
             {
-                return;
-            }//중복 데미지의 예외사항
-            StartCoroutine(DamageDelay());
-            _currentState = State.Damage;
-            switchStateUpdate(this.currentState);
-            _hpCount++;
+                if (invisible || _damaged)
+                {
+                    return;
+                }//중복 데미지의 예외사항
+                StartCoroutine(DamageDelay());
+                _currentState = State.Damage;
+                switchStateUpdate(this.currentState);
+                _hpCount++;
+            }
         }
-        
+
 
         /// <summary>
         /// 승패를 구분해서 모션을 플레이 해줌
         /// </summary>
         private void EndMotionPrint()
         {
-            Debug.Log("이 함수 불러짐?");
-            if (GameManager.Instance.winningTeam == LayerMask.LayerToName(gameObject.layer))//이겼을 때
+            if (_photonView.IsMine)
             {
-                _animator.Play("Victory");
-                Debug.Log("승리 모션 취하는 중~");
-            }//이겼을 때 모션
-            else if(GameManager.Instance.winningTeam == "Draw")
-            {
-                _animator.Play("Tired");
-                Debug.Log("비긴 모션 취하는 중~");
+                if (GameManager.Instance.winningTeam == LayerMask.LayerToName(gameObject.layer))//이겼을 때
+                {
+                    _animator.Play("Victory");
+                }//이겼을 때 모션
+                else if (GameManager.Instance.winningTeam == "Draw")
+                {
+                    _animator.Play("Tired");
 
-            }//비겼을 때
-            else
-            {
-                _animator.Play("Sit");
-                Debug.Log("패배 모션 취하는 중~");
-
-            }//졌을 때
+                }//비겼을 때
+                else
+                {
+                    _animator.Play("Sit");
+                }//졌을 때
+            }
         }
+
 
         public void IsAttack()
         {
-            if(_canAttack)
+            if (_canAttack)
             {
                 return;
             }
@@ -405,6 +475,7 @@ namespace MJ.Player
         IEnumerator ResetRespawnState()
         {
             yield return new WaitForSeconds(_respawnTime);
+            Debug.Log("생존으로바뀌는지 확인한다.");
             isLive = true;
             IsMove();
         }
@@ -470,13 +541,16 @@ namespace MJ.Player
         /// </summary>
         void CanMove()
         {
-            if (_onTouching)
+            if (_photonView.IsMine)
             {
-                Movement();
-            }//입력이 있을 때
-            else
-            {
-                Movement();
+                if (_onTouching)
+                {
+                    Movement();
+                }//입력이 있을 때
+                else
+                {
+                    Movement();
+                }
             }
         }
         /// <summary>
@@ -506,9 +580,12 @@ namespace MJ.Player
         /// </summary>
         private void Movement()
         {
-            Jump();
-            Move();
-            Rotate();
+            if (_photonView.IsMine)
+            {
+                Jump();
+                Move();
+                Rotate();
+            }
         }
 
         /// <summary>
@@ -552,7 +629,7 @@ namespace MJ.Player
         private Vector3 CheckDirection()
         {
             _direction = _startPosition - _currentPosition;
-            return _direction; 
+            return _direction;
         }
         /// <summary>
         /// 점프를 뛸때 지상에 있는지 판단하는 함수 얘는 Update에서 지속적으로 체크를 해줘야함
@@ -616,4 +693,3 @@ namespace MJ.Player
         }
     }
 }
-

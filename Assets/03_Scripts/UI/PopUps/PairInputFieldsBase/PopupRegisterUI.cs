@@ -38,6 +38,10 @@ public class PopUpRegisterUI : PopUpInputField2BaseUI
         CavasHide();
         Resetting();
     }
-
+    public void OnClickButton_InputNickname()
+    {
+        CavasHide();
+        Resetting();
+    }
 }
 

@@ -128,7 +128,17 @@ namespace Photon.Pun.UtilityScripts
                 playersPerTeam[teamsList[i].Code] = new HashSet<Player>();
             }
         }
+        public void JoinTeamA()
+        {
+            Player localPlayer = PhotonNetwork.LocalPlayer;
+            localPlayer.JoinTeam("TeamA"); 
+        }
 
+        public void JoinTeamB()
+        {
+            Player localPlayer = PhotonNetwork.LocalPlayer;
+            localPlayer.JoinTeam("TeamB");
+        }
         #endregion
 
         #region IMatchmakingCallbacks

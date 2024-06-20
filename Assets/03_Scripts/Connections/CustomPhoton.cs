@@ -4,6 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
+using static UnityEngine.Rendering.DebugUI.Table;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
+
 /// <summary>
 /// 포톤 관련 정리, 싱글톤
 /// </summary>
@@ -18,12 +22,23 @@ public class CustomPhoton : MonoBehaviourPunCallbacks //프로퍼티와 메소�
     }
 
     public bool isLogin { get => _isLogin; set { } }//로그인 조건충족 프로퍼티
+    public GameObject roomListContent;
+    public GameObject roomListItemPrefab;
+    public GameObject teamSelectPanel;
 
     private static CustomPhoton _instance;
     public GameObject obj;
 
     bool _isLogin = false;
+    public Button createRoomButton;
 
+    /// <summary>
+    /// 플레이팹에서 받은 닉네임은 유저 닉네임으로 지정
+    /// </summary>
+    private string _nickname = CustomPlayfab.Instance.accountInfo.AccountInfo.TitleInfo.DisplayName;
+    /// <summary>
+    /// 게임의 버전 지금은 프로토 타입으로 지정함
+    /// </summary>
     protected void Awake()
     {
         if (_instance != null)
@@ -43,6 +58,11 @@ public class CustomPhoton : MonoBehaviourPunCallbacks //프로퍼티와 메소�
 
         //마스터가 로드레벨시, 나머지 클라이언트가 자동으로 같은 방에 싱크될 수 있도록 제어한다.
         PhotonNetwork.AutomaticallySyncScene = true;
+        //접속 유저의 닉네임 설정
+        PhotonNetwork.NickName = _nickname;
+
+        //포톤 서버 접속
+        PhotonNetwork.ConnectUsingSettings();
     }
 
     string gameVersion = "1";//클라이언트 버전 체크용 : 출시 후의 변경사항이 없는 한 1로 유지
@@ -81,6 +101,7 @@ public class CustomPhoton : MonoBehaviourPunCallbacks //프로퍼티와 메소�
         {
             PhotonNetwork.GameVersion = gameVersion; //현재 버전을 할당한다
             PhotonNetwork.ConnectUsingSettings(); //준비된 구성파일로 서버에 연결하는 함수
+            PhotonNetwork.AutomaticallySyncScene = true;
             OnConnectedToMaster();
         }
     }
@@ -98,13 +119,93 @@ public class CustomPhoton : MonoBehaviourPunCallbacks //프로퍼티와 메소�
         {
             PopUpLogUI.Instance.logText.text = "로비 씬 불러오는 중";
             PhotonNetwork.JoinLobby();
+            createRoomButton.interactable = true;
         }
     }
 
     public override void OnJoinedLobby()
     {
         base.OnJoinedLobby();
+        
     }
 
     #endregion 로비
+
+    #region 룸
+
+    public void JoinRoom()
+    {
+        if (_isLogin = CustomPlayfab.Instance.isloginSuccess == true)
+        {
+            PopUpLogUI.Instance.logText.text = "룸 씬 불러오는 중";
+            PhotonNetwork.JoinRandomRoom();
+        }
+    }
+    public override void OnJoinedRoom()
+    {
+        base.OnJoinedRoom();
+
+        Debug.Log($"PhotonInRoom = {PhotonNetwork.InRoom}");
+        Debug.Log($"Player Count = {PhotonNetwork.CurrentRoom.PlayerCount}");
+
+        foreach(var player in PhotonNetwork.CurrentRoom.Players)
+        {
+            Debug.Log($"{player.Value.NickName} , {player.Value.ActorNumber}");
+        }
+
+
+    }
+    #endregion
+
+    /// <summary>
+    /// 버튼을 눌렀을 때 팀을 정하는 함수
+    /// </summary>
+    public void OnTeamSelectButton(int teamID)
+    {
+        PhotonNetwork.LocalPlayer.SetCustomProperties(new Hashtable { { "team", teamID } });
+    }
+
+    public void OnRoomListUpdated(List<Room> roomList)
+    {
+        foreach (Transform trans in roomListContent.transform)
+        {
+            Destroy(trans.gameObject);
+        }
+
+        foreach (RoomInfo room in roomList)
+        {
+            if (room.RemovedFromList) continue;
+            GameObject listItem = Instantiate(roomListItemPrefab, roomListContent.transform);
+            listItem.GetComponentInChildren<Text>().text = room.Name;
+            listItem.GetComponent<Button>().onClick.AddListener(() => PhotonNetwork.JoinRoom(room.Name));
+        }
+    }
+
+    public void StartGame()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            // 방을 닫아 더 이상 플레이어가 참가하지 못하도록 설정
+            PhotonNetwork.CurrentRoom.IsOpen = false;
+            PhotonNetwork.CurrentRoom.IsVisible = false;
+        }
+    }
+
+    public void EndGame()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            // 게임이 끝나면 방을 다시 열어 새로운 플레이어의 입장을 허용
+            PhotonNetwork.CurrentRoom.IsOpen = true;
+            PhotonNetwork.CurrentRoom.IsVisible = true;
+        }
+    }
+
+    public void LoadGameScene()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.LoadLevel("InGame");
+        }
+    }
 }

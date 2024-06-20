@@ -829,6 +829,36 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
+  - m_Name: Jump
+    m_Type: 4
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
+  - m_Name: Speed
+    m_Type: 1
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
+  - m_Name: Attack
+    m_Type: 9
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
+  - m_Name: IsMoving
+    m_Type: 4
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
+  - m_Name: Idle
+    m_Type: 4
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Base Layer
@@ -1310,7 +1340,7 @@ AnimatorStateMachine:
     m_Position: {x: 730, y: 240, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 110209958}
-    m_Position: {x: 730, y: 190, z: 0}
+    m_Position: {x: 210, y: 210, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 110274110}
     m_Position: {x: 730, y: 290, z: 0}
@@ -1319,10 +1349,10 @@ AnimatorStateMachine:
     m_Position: {x: 730, y: 340, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 110293690}
-    m_Position: {x: 280, y: 10, z: 0}
+    m_Position: {x: 300, y: 0, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 110208044}
-    m_Position: {x: 770, y: 810, z: 0}
+    m_Position: {x: 300, y: 70, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 110259590}
     m_Position: {x: 730, y: 490, z: 0}
@@ -1355,7 +1385,7 @@ AnimatorStateMachine:
     m_Position: {x: 460, y: 690, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1102158295059267128}
-    m_Position: {x: -180, y: 730, z: 0}
+    m_Position: {x: 310, y: 130, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1102327798200391232}
     m_Position: {x: 190, y: 520, z: 0}
@@ -1373,22 +1403,22 @@ AnimatorStateMachine:
     m_Position: {x: 190, y: 720, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 3217493402783475935}
-    m_Position: {x: -50, y: 80, z: 0}
+    m_Position: {x: -260, y: 80, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1873350076878768519}
-    m_Position: {x: -50, y: 130, z: 0}
+    m_Position: {x: -260, y: 130, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -5569742215140705416}
-    m_Position: {x: -50, y: 30, z: 0}
+    m_Position: {x: -470, y: 50, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 7742947618069365180}
-    m_Position: {x: -50, y: 180, z: 0}
+    m_Position: {x: -260, y: 180, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 7304791325660869990}
-    m_Position: {x: -50, y: 230, z: 0}
+    m_Position: {x: -260, y: 230, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -2496956265005352350}
-    m_Position: {x: -50, y: 280, z: 0}
+    m_Position: {x: -260, y: 280, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -8043308308440112561}
     m_Position: {x: -50, y: 330, z: 0}
@@ -1415,10 +1445,10 @@ AnimatorStateMachine:
     m_Position: {x: -400, y: -130, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -4436389695413930338}
-    m_Position: {x: -80, y: -120, z: 0}
+    m_Position: {x: -230, y: -30, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -695096847856408815}
-    m_Position: {x: -80, y: -70, z: 0}
+    m_Position: {x: -230, y: -70, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 3302560713494562277}
     m_Position: {x: 450, y: -390, z: 0}
@@ -1457,11 +1487,11 @@ AnimatorStateMachine:
   m_EntryTransitions: []
   m_StateMachineTransitions: {}
   m_StateMachineBehaviours: []
-  m_AnyStatePosition: {x: 250, y: -210, z: 0}
-  m_EntryPosition: {x: 120, y: -276, z: 0}
+  m_AnyStatePosition: {x: 260, y: -60, z: 0}
+  m_EntryPosition: {x: 30, y: 60, z: 0}
   m_ExitPosition: {x: 800, y: 120, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
-  m_DefaultState: {fileID: 1102158295059267128}
+  m_DefaultState: {fileID: 110209958}
 --- !u!1102 &956158748429839105
 AnimatorState:
   serializedVersion: 6
