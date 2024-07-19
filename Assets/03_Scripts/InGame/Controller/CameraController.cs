@@ -23,25 +23,25 @@ public class CameraController : MonoBehaviour
     private void Update()
     {
         //카메라의 거리와 플레이어의 포지션의 거리 차이 계산
-        float _distance = Vector3.Distance(transform.position, _playerTransform.position);
-        //카메라와 플레이어 간의 각도
-        Vector3 _direction = (_playerTransform.position - transform.position).normalized;
-        //RaycastHit hits;
-        RaycastHit[] Targets = Physics.RaycastAll(_playerTransform.position, _direction,_distance, _obstacleMask);
-        foreach (RaycastHit Obstacle in Targets)
-        {
-            _hitObstacleList.Add(Obstacle);
-            //Debug.Log(_hitObstacleList.Count);
-            _materialAlphaChanger = Obstacle.transform.GetComponent<MaterialAlphaChanger>();
-            _materialAlphaChanger.alphaChange = true;
+        //float _distance = Vector3.Distance(transform.position, _playerTransform.position);
+        ////카메라와 플레이어 간의 각도
+        //Vector3 _direction = (_playerTransform.position - transform.position).normalized;
+        ////RaycastHit hits;
+        ////RaycastHit[] Targets = Physics.RaycastAll(_playerTransform.position, _direction,_distance, _obstacleMask);
+        //foreach (RaycastHit Obstacle in Targets)
+        //{
+        //    _hitObstacleList.Add(Obstacle);
+        //    //Debug.Log(_hitObstacleList.Count);
+        //    _materialAlphaChanger = Obstacle.transform.GetComponent<MaterialAlphaChanger>();
+        //    _materialAlphaChanger.alphaChange = true;
 
-            if (Targets.Length == 0)
-            {
-                _materialAlphaChanger.alphaChange = false;
-                _hitObstacleList.Clear();
-                return;
-            }
-        }
+        //    if (Targets.Length == 0)
+        //    {
+        //        _materialAlphaChanger.alphaChange = false;
+        //        _hitObstacleList.Clear();
+        //        return;
+        //    }
+        //}
         
 
         //그 사이에 부딫힌 모든 장애물 레이어를 가진 것들을hits에 저장
